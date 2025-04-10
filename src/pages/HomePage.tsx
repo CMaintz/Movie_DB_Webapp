@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Container, Grid, Typography, CircularProgress } from '@mui/material';
 import GenreRow from '../components/GenreRow.tsx';
-import { fetchGenres } from '../services/tmdbService';
+import { fetchGenres, fetchMoviesByGenre } from '../services/tmdbService';
 import {Genre} from '../types/Genre';
 
 const HomePage = () => {
-    const [genres, setGenres] = useState<Genre[]>([]);
+    const [genres, setGenres] = useState<any[]>([]); // Replace with the correct type for genres
+    const [moviesByGenre, setMoviesByGenre] = useState<any>({}); // Movies for each genre
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-
-    useEffect(() => {
+/*useEffect(() => {
         const fetchData = async () => {
             try {
                 const fetchedGenres = await fetchGenres();
@@ -26,6 +26,24 @@ const HomePage = () => {
 
         //fetches the genres
          fetchData();
+    }, []);*/
+    useEffect(() => {
+        const fetchData = async () => {
+            const genresData = await fetchGenres();
+            setGenres(genresData);
+
+            // Fetch movies for each genre
+            const moviesData: any = {};
+            for (let genre of genresData) {
+                const movies = await fetchMoviesByGenre(genre.id);
+                moviesData[genre.id] = movies;
+            }
+
+            setMoviesByGenre(moviesData);
+            setLoading(false);
+        };
+
+        fetchData();
     }, []);
 
     return (
@@ -37,10 +55,15 @@ const HomePage = () => {
                 <CircularProgress />
             ) : error ? (<Typography color="error">{error}</Typography>
                 ) : (
-                <Grid container spacing={3}>
+                <Grid container spacing={2}>
                     {genres.map((genre) => (
-                        <Grid key={genre.id} size={{xs:12, sm:6, md:4}}>
-                            <GenreRow genre={genre} />
+                        <Grid size={{xs: 12, sm: 6, md: 4}} key={genre.id}>
+                            <GenreRow
+                                genre={genre.name}
+                                movies={moviesByGenre[genre.id] || []}
+                                genreId={genre.id}
+                                maxMovies={8} // Display 8 movies at first
+                            />
                         </Grid>
                     ))}
                 </Grid>
