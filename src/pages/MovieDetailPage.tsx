@@ -2,15 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Typography, Button, CircularProgress } from '@mui/material';
 import { fetchMovieDetails } from '../services/tmdbService';
+import { Movie } from '../types/Movie.ts';
 
-interface Movie {
-    id: number;
-    title: string;
-    overview: string;
-    poster_path: string;
-    release_date: string;
-    vote_average: number;
-}
 
 const MovieDetailPage = () => {
     const { movieId } = useParams();

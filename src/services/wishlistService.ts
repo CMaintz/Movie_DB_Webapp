@@ -1,6 +1,5 @@
 // services/wishlistService.ts
 
-import { db } from '../firebaseConfig';  // Firebase DB
 import { doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { User } from '../types/User'; // Brugerdefineret type
 import { Movie } from '../types/Movie'; // Brugerdefineret type
