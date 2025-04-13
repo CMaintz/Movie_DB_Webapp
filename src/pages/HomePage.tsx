@@ -36,7 +36,7 @@ const HomePage = () => {
 
     return (
         <Container maxWidth={false} sx={{ px: { xs: 1, sm: 2, md: 3, lg: 5 },
-            width: {xs: '100%', sm: '100%', md: '90%', lg: '80%', xl: '80%'} }}>
+            /*width: {xs: '100%', sm: '100%', md: '90%', lg: '80%', xl: '60%'}*/ }}>
             <Typography variant="h4" gutterBottom>
                 Movie Genres
             </Typography>

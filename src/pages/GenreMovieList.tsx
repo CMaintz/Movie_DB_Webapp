@@ -38,7 +38,7 @@ const GenreMovieList: React.FC = () => {
         setMovies([]);
         setPage(1);
         setTotalPages(1);
-    }, [genre?.id]);
+    }, [genre.id]);
 
     useEffect(() => {
         loadMovies();

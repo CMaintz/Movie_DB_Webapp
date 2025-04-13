@@ -14,6 +14,8 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
                 flexDirection: 'column',
                 width: { xs: '200px', sm: '224.66px' }, // Fixed width
                 height: { xs: '380px', sm: '433px' }, // Fixed height
+                //width: { xs: '180px', sm: '200px', md: '220px', lg: '240px', xl: '260px' },
+              //  height: { xs: '320px', sm: '360px', md: '400px', lg: '440px', xl: '480px' },
                 boxShadow: 4,
                 transition: 'box-shadow 0.3s ease-in-out',
                 '&:hover': { boxShadow: 8 },
@@ -41,6 +43,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
                 <Typography
                     variant="subtitle1"
                     sx={{
+                        fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem', lg: '1.1rem', xl: '1.2rem' },
                         fontWeight: 600,
                         color: 'text.primary',
                         lineHeight: 1.2,
@@ -49,7 +52,6 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
-                        minHeight: '2.5rem',
                     }}
                 >
                     {movie.title}

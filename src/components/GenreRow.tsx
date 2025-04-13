@@ -22,7 +22,25 @@ const GenreRow: React.FC<GenreRowProps> = ({ genre, movies, initialPage, totalPa
     const isXs = useMediaQuery(theme.breakpoints.down('sm'));
     const isSm = useMediaQuery(theme.breakpoints.between('sm', 'md'));
     const isMd = useMediaQuery(theme.breakpoints.between('md', 'lg'));
-    const moviesPerRow = isXs ? 2 : isSm ? 4 : isMd ? 6 : 8;
+    const isLg = useMediaQuery(theme.breakpoints.between('lg', 'xl'));
+    const isXl = useMediaQuery(theme.breakpoints.up('xl'));
+
+    //TODO: Gotta use my brain to calculate the number of movies per row based on the screen size; If Card width is
+    // static and height is static, then we can calculate the number of movies per row based on the screen size
+    // but maybe the size should be dependent on the screen size, but still controlled.
+    // Current is 244.66px width and 433px height.
+    // xs: 0,
+    // sm: 600,
+    // md: 900,
+    // lg: 1200,
+    // xl: 1536,
+    // xxl: 1920.
+    // 1440, for example, should have... What, 5, right?
+    // Could edit these to fit my needs; 244.66 + margin of 12 between each card, 24 px margin on either side
+    // (unless it's size sm, at which point margin should be halved to the sides and perhaps between cards too)
+    // but I'm not sure right now tbqh.
+
+    const moviesPerRow = isXs ? 2 : isSm ? 4 : isXl ? 6 : 8;
 
     const [visibleMovies, setVisibleMovies] = useState<number>(moviesPerRow);
     const [currentMovies, setCurrentMovies] = useState<Movie[]>(Array.isArray(movies) ? movies : []);
@@ -75,7 +93,7 @@ const GenreRow: React.FC<GenreRowProps> = ({ genre, movies, initialPage, totalPa
             pt: 1.5,
             px: 3, // 24px padding on left and right
             my: 1.5,
-            width: '100%',
+            //width: '100%',
             maxWidth: 'none',
         }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
@@ -94,10 +112,10 @@ const GenreRow: React.FC<GenreRowProps> = ({ genre, movies, initialPage, totalPa
 
 
 
-            <Grid container spacing={1.5} columns={{ xs: 4, sm: 8, md: 12, lg: 16 }} sx={{margin: 0, width: '100%',}}>
+            <Grid container spacing={1.5} columns={{ xs: 4, sm: 8, xl: 12,xxl: 16 }} sx={{margin: 0, /*width: '100%',*/}}>
                 {currentMovies.slice(0, visibleMovies).map((movie) => (
-                    <Grid size={{xs: 2, sm: 2, md: 2, lg: 2}} key={movie.id} sx={{padding: 0,}}>
-                        <Box sx={{ textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <Grid size={{xs: 6, sm: 4, md: 3, lg: 2, xl: 2, xxl: 2}} key={movie.id} sx={{padding: 0,}}>
+                        <Box sx={{ textAlign: 'center', height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
                             <MovieCard movie={movie} />
                         </Box>
                     </Grid>
@@ -112,6 +130,7 @@ const GenreRow: React.FC<GenreRowProps> = ({ genre, movies, initialPage, totalPa
                 </Box>
             )}
         </Paper>
+        //            <Grid container spacing={2} sx={{ flexWrap: 'wrap' }}>
     );
 };
 

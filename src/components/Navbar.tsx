@@ -6,8 +6,8 @@ import * as React from 'react';
 import {AppBar, Box, Toolbar, Typography, IconButton, Menu, Container, Avatar, Button, Tooltip, MenuItem} from '@mui/material';
 import {Menu as MenuIcon, Adb as AdbIcon } from '@mui/icons-material';
 
-const pages = ['Products', 'Pricing', 'Blog'];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const pages = ['Movies', 'Series'];
+const settings = ['Profile', 'Wishlist', 'Logout'];
 
 const Navbar: React.FC = () => {
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
