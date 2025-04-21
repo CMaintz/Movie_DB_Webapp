@@ -54,7 +54,7 @@ A modern, responsive web application for browsing movies and TV shows, powered b
    ```
 
 3. **Set up environment variables**
-   Create a `.env` file in the root directory with the following:
+   Create a `.env` file in the root directory with the following (or rename the .env.example file)
    ```
    VITE_TMDB_API_KEY=your_tmdb_api_key
    VITE_FIREBASE_API_KEY=your_firebase_api_key
