@@ -30,7 +30,7 @@ import {
     Person,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Navbar = () => {
     const { user, logout } = useAuth();
@@ -77,10 +77,6 @@ const Navbar = () => {
     const handleNavigation = (path: string) => {
         navigate(path);
         setMobileMenuOpen(false);
-    };
-
-    const handleGenresClick = () => {
-        navigate('/genre/Action'); // Default to Action genre
     };
 
     const mobileMenu = (
@@ -170,7 +166,7 @@ const Navbar = () => {
                                 handleNavigation('/');
                                 break;
                             case 1:
-                                handleGenresClick();
+                                handleNavigation('/genre/Action')
                                 break;
                             case 2:
                                 handleNavigation('/wishlist');
@@ -240,7 +236,7 @@ const Navbar = () => {
                     <Button
                         color="inherit"
                         startIcon={<Category />}
-                        onClick={handleGenresClick}
+                        onClick={() => navigate('/genre/Action')}
                     >
                         Genres
                     </Button>
