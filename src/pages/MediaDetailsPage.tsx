@@ -104,6 +104,8 @@ const MediaDetailsPage: React.FC = () => {
             position: 'relative',
             bgcolor: 'background.default',
             alignItems: 'center',
+            overflowY: 'auto',
+            overflowX: 'hidden',
         }}>
 
             {/* Background Image Section */}
