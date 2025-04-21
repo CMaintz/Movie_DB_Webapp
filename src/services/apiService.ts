@@ -1,12 +1,23 @@
+/**
+ * API Service for The Movie Database (TMDB)
+ * Handles all interactions with the TMDB API for fetching movie and TV show data
+ * Provides both direct API functions and React Query hooks for data fetching
+ */
 import axios from 'axios';
 import { MediaResponse, Genre, MediaDetails } from '../types';
 import { useQuery } from '@tanstack/react-query';
 
+// API constants
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
 const DEFAULT_LANGUAGE = 'en-US'; // Set default language to English
 const MAX_PAGE_LIMIT = 500; // TMDB API page limit
 
+/**
+ * Axios instance with predefined configuration for TMDB API
+ * - Sets base URL, API key, and language
+ * - Sets content type headers
+ */
 const apiService = axios.create({
     baseURL: BASE_URL,
     params: {
@@ -20,7 +31,9 @@ const apiService = axios.create({
     withCredentials: false,
 });
 
-// Add response interceptor to handle CORS
+/**
+ * Response interceptor to handle errors, particularly CORS issues
+ */
 apiService.interceptors.response.use(
     (response) => response,
     (error) => {
@@ -32,11 +45,18 @@ apiService.interceptors.response.use(
     }
 );
 
-// Helper function to ensure page is within limits
+/**
+ * Helper function to ensure page number is within API limits
+ * TMDB has a maximum page limit for pagination, afaik
+ */
 const getSafePage = (page: number): number => {
     return Math.min(page, MAX_PAGE_LIMIT);
 };
 
+/**
+ * Fetches trending movies or TV shows for the week
+
+ */
 export const getTrending = async (mediaType: 'movie' | 'tv' = 'movie', page: number = 1): Promise<MediaResponse> => {
     const safePage = getSafePage(page);
     const { data } = await apiService.get(`/trending/${mediaType}/week`, {
@@ -54,11 +74,18 @@ export const getTrending = async (mediaType: 'movie' | 'tv' = 'movie', page: num
     return data;
 };
 
+/**
+ * Fetches all genres for movies or TV shows
+ */
 export const getGenres = async (mediaType: 'movie' | 'tv'): Promise<Genre[]> => {
     const { data } = await apiService.get(`/genre/${mediaType}/list`);
     return data.genres;
 };
 
+/**
+ * Fetches media (movies or TV shows) by genre
+
+ */
 export const getMediaByGenre = async (
     mediaType: 'movie' | 'tv',
     genreId: number,
@@ -92,6 +119,9 @@ export const getMediaByGenre = async (
     };
 };
 
+/**
+ * Fetches detailed information for a specific movie or TV show
+ */
 export const getMediaDetails = async (
     mediaType: 'movie' | 'tv',
     id: number
@@ -110,6 +140,10 @@ export const getMediaDetails = async (
     };
 };
 
+/**
+ * Fetches count of media items for a specific genre
+ * Used for UI display of content availability
+ */
 export const getMediaCountByGenre = async (mediaType: 'movie' | 'tv', genreId: number): Promise<number> => {
     const { data } = await apiService.get(`/discover/${mediaType}`, {
         params: {
@@ -124,6 +158,10 @@ export const getMediaCountByGenre = async (mediaType: 'movie' | 'tv', genreId: n
     return Math.min(data.total_results, maxResults);
 };
 
+/**
+ * React Query hook for trending media
+ * Provides data fetching, caching, and loading states
+ */
 export const useTrending = (mediaType: 'movie' | 'tv' = 'movie', page: number = 1, options?: any) => {
     return useQuery<MediaResponse>({
         queryKey: ['trending', mediaType, page],
@@ -134,6 +172,10 @@ export const useTrending = (mediaType: 'movie' | 'tv' = 'movie', page: number = 
     });
 };
 
+/**
+ * React Query hook for genres
+ * Provides data fetching, caching, and loading states
+ */
 export const useGenres = (mediaType: 'movie' | 'tv', options?: any) => {
     return useQuery<Genre[]>({
         queryKey: ['genres', mediaType],
@@ -144,6 +186,10 @@ export const useGenres = (mediaType: 'movie' | 'tv', options?: any) => {
     });
 };
 
+/**
+ * React Query hook for media by genre
+ * Provides data fetching, caching, and loading states
+ */
 export const useMediaByGenre = (mediaType: 'movie' | 'tv', genreId: number, page: number = 1, options?: any) => {
     return useQuery<MediaResponse>({
         queryKey: ['mediaByGenre', mediaType, genreId, page],
@@ -154,6 +200,10 @@ export const useMediaByGenre = (mediaType: 'movie' | 'tv', genreId: number, page
     });
 };
 
+/**
+ * React Query hook for media details
+ * Provides data fetching, caching, and loading states
+ */
 export const useMediaDetails = (mediaType: 'movie' | 'tv', id: number) => {
     return useQuery<MediaDetails>({
         queryKey: ['mediaDetails', mediaType, id],
@@ -163,6 +213,10 @@ export const useMediaDetails = (mediaType: 'movie' | 'tv', id: number) => {
     });
 };
 
+/**
+ * React Query hook for media count by genre
+ * Provides data fetching, caching, and loading states
+ */
 export const useMediaCountByGenre = (mediaType: 'movie' | 'tv', genreId: number) => {
     return useQuery<number>({
         queryKey: ['mediaCountByGenre', mediaType, genreId],

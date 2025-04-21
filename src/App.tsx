@@ -1,3 +1,7 @@
+/**
+ * Main application component that sets up the application structure and routing
+ * Provides global providers for theme, notifications, query cache, and authentication
+ */
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, CssBaseline, Box } from '@mui/material';
@@ -14,6 +18,11 @@ import WishlistPage from './pages/WishlistPage';
 import MediaDetailsPage from './pages/MediaDetailsPage';
 import theme from './theme';
 
+/**
+ * Create a Query Client instance with caching configurations
+ * - staleTime: How long data is considered fresh (5 minutes)
+ * - gcTime: How long unused data is kept in cache (30 minutes)
+ */
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
@@ -23,6 +32,10 @@ const queryClient = new QueryClient({
     },
 });
 
+/**
+ * Protected Route component that redirects to login if user is not authenticated
+ * Used to guard routes that require authentication
+ */
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const { user } = useAuth();
 
@@ -33,6 +46,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <>{children}</>;
 };
 
+/**
+ * AppContent component that contains all application routes
+ * Handles routing logic and authentication state for protected routes
+ */
 const AppContent: React.FC = () => {
     const { user, loading } = useAuth();
 
@@ -73,6 +90,10 @@ const AppContent: React.FC = () => {
     );
 };
 
+/**
+ * Main App component that sets up provider context for the entire application
+ * Provides global styling, theme, notifications, data fetching, and auth state
+ */
 function App() {
     return (
         <ThemeProvider theme={theme}>

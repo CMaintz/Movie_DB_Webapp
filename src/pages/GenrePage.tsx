@@ -1,3 +1,13 @@
+/**
+ * Genre Page Component
+ * 
+ * Displays movies and TV shows filtered by a specific genre.
+ * Features:
+ * - Genre selection dropdown
+ * - Tabbed interface for All/Movies/TV Shows
+ * - Pagination for browsing large result sets
+ * - Maintains scroll position when navigating back
+ */
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -17,6 +27,10 @@ import MediaGrid from '../components/MediaGrid';
 import Pagination from '../components/Pagination';
 import { getGenreMapping, GENRES } from '../utils/genreMap';
 
+/**
+ * Tab panel component for organizing content in tabs
+ * Used to create the All/Movies/TV Shows tabs
+ */
 interface TabPanelProps {
     children?: React.ReactNode;
     index: number;
@@ -49,7 +63,12 @@ const GenrePage: React.FC = () => {
     const [movieId, setMovieId] = useState<number | undefined>();
     const [tvId, setTvId] = useState<number | undefined>();
 
-    // Update genre when URL changes or component mounts
+    /**
+     * Effect to initialize genre IDs when the component mounts
+     * or when the URL parameters change
+     * 
+     * Also handles restoring scroll position when navigating back
+     */
     useEffect(() => {
         const genreName = name || location.state?.genreName || selectedGenre;
         if (genreName) {
@@ -67,10 +86,13 @@ const GenrePage: React.FC = () => {
         }
     }, [name, location.state, selectedGenre]);
 
+    /**
+     * Fetch media data for the selected genre
+     * Uses the useGenreMedia hook to get combined and categorized results
+     */
     const {
         moviesData,
         tvData,
-
         movieCount,
         tvCount,
         combinedMedia,
@@ -82,22 +104,35 @@ const GenrePage: React.FC = () => {
         shouldLoadAll: true
     });
 
+    /**
+     * Handle tab change between All/Movies/TV Shows
+     * Resets pagination when switching tabs
+     */
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTabValue(newValue);
         setPage(1); // Reset page when switching tabs
     };
 
+    /**
+     * Handle genre selection from dropdown
+     * Navigates to the new genre page
+     */
     const handleGenreChange = (event: SelectChangeEvent) => {
         const newGenre = event.target.value;
         setSelectedGenre(newGenre);
         navigate(`/genre/${newGenre}`);
     };
 
+    /**
+     * Handle pagination changes
+     * Smoothly scrolls back to top when changing pages
+     */
     const handlePageChange = (newPage: number) => {
         setPage(newPage);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    // Show error if genre IDs couldn't be resolved
     if (!movieId || !tvId) {
         return (
             <Container>
@@ -109,6 +144,7 @@ const GenrePage: React.FC = () => {
     return (
         <Container maxWidth={false}>
             <Box sx={{ py: 4 }}>
+                {/* Header with title and genre selector dropdown */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
                     <Typography variant="h4" component="h1">
                         Browse by Genre

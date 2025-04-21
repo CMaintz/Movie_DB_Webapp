@@ -1,3 +1,10 @@
+/**
+ * Media Details Page Component
+ * 
+ * Displays detailed information about a movie or TV show.
+ * Handles the rendering of media information, cast, trailers, and related data.
+ * Adapts display based on media type (movie vs TV show) and screen size.
+ */
 import React, { useState } from 'react';
 import {
     Box,
@@ -30,9 +37,11 @@ const MediaDetailsPage: React.FC = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const { mediaType, id } = useParams<{ mediaType: string; id: string }>();
+    // Fetch media details from the API based on the mediaType and id from URL params
     const { data: media, isLoading, error } = useMediaDetails(mediaType as 'movie' | 'tv', Number(id));
     const [autoPlay, setAutoPlay] = useState(true);
 
+    // Display loading state while fetching data
     if (isLoading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
@@ -41,6 +50,7 @@ const MediaDetailsPage: React.FC = () => {
         );
     }
 
+    // Handle error states
     if (error || !media) {
         return (
             <Box sx={{ p: 4 }}>
@@ -49,6 +59,11 @@ const MediaDetailsPage: React.FC = () => {
         );
     }
 
+    /**
+     * Extract relevant crew information based on media type
+     * - For movies: Find the director
+     * - For TV shows: Find creators and producers
+     */
     // Get director information (for movies)
     const director = media.media_type === 'movie'
         ? media.credits?.crew?.find(person => person.job === 'Director')
@@ -59,6 +74,9 @@ const MediaDetailsPage: React.FC = () => {
         ? media.credits?.crew?.filter(person => person.job === 'Creator' || person.job === 'Executive Producer' || person.job === 'Showrunner')
         : [];
 
+    /**
+     * Handle navigation to genre page when a genre chip is clicked
+     */
     const handleGenreClick = (genre: Genre) => {
         const mapping = getGenreMapping(genre.name);
         if (mapping) {
@@ -72,6 +90,7 @@ const MediaDetailsPage: React.FC = () => {
         }
     };
 
+    // Find the official trailer video if available
     const trailer = media.videos?.results?.find(
         (video) => video.site === 'YouTube' && video.type === 'Trailer'
     );
@@ -117,7 +136,8 @@ const MediaDetailsPage: React.FC = () => {
                 }}
             />
 
-            {/* Header Section */}
+            {/* Navigation Back Button 
+                Fixed position to ensure it's always accessible */}
             <IconButton
                 onClick={() => navigate(-1)}
                 sx={{
@@ -135,6 +155,8 @@ const MediaDetailsPage: React.FC = () => {
                 <ArrowBack />
             </IconButton>
 
+            {/* Header Section with Title and Core Information
+                Positioned over the backdrop with responsive sizing */}
             <Box
                 sx={{
                     position: 'relative',
@@ -153,6 +175,7 @@ const MediaDetailsPage: React.FC = () => {
                     px: { xs: 2, sm: 3 }
                 }}>
                     <Stack spacing={2} sx={{ pb: 4 }}>
+                        {/* Title and Wishlist Button Row */}
                         <Stack
                             direction="row"
                             spacing={0}
@@ -194,6 +217,7 @@ const MediaDetailsPage: React.FC = () => {
                             </Typography>
                         </Stack>
 
+                        {/* Media Metadata Row - Year, Runtime, Rating */}
                         <Stack
                             direction="row"
                             spacing={2}
