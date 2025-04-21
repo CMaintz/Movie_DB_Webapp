@@ -1,66 +1,99 @@
-import { useState, useEffect } from 'react';
-import { Container, Typography, CircularProgress, Box } from '@mui/material';
-import GenreRow from '../components/GenreRow.tsx';
-import { fetchGenres, fetchMoviesByGenre } from '../services/tmdbService';
-import {Genre} from "../types/Genre.ts";
+import React, { useState, useEffect } from 'react';
+import { Container } from '@mui/material';
+import { useGenres } from '../services/api';
+import MediaGrid from '../components/MediaGrid';
+import { useNavigate } from 'react-router-dom';
+import { GENRES } from '../utils/genreMap';
+import { useGenreMedia } from '../hooks/useGenreMedia';
+import { Media } from '../types';
 
-const HomePage = () => {
-    const [genres, setGenres] = useState<Genre[]>([]);
-    const [moviesByGenre, setMoviesByGenre] = useState<any>({});
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const moviesData: any = {};
+const HomePage: React.FC = () => {
+    const { data: movieGenres = [] } = useGenres('movie');
+    const { data: tvGenres = [] } = useGenres('tv');
+    const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const genresData: Genre[] = await fetchGenres();
-                setGenres(genresData);
-
-                const moviesData: any = {};
-                for (let genre of genresData) {
-                    moviesData[genre.id] = await fetchMoviesByGenre(genre.id, 1); // explicit "page = 1"
-                }
-
-                setMoviesByGenre(moviesData);
-            } catch (err) {
-                console.error(err);
-                setError('Failed to load data.');
-            } finally {
-                setLoading(false);
+    const handleGenreClick = (genreName: string) => {
+        const scrollPosition = window.scrollY;
+        navigate(`/genre/${genreName}`, {
+            state: {
+                genreName,
+                scrollPosition
             }
-        };
-
-        fetchData();
-    }, []);
+        });
+    };
 
     return (
-        <Container maxWidth={false} sx={{ px: { xs: 1, sm: 2, md: 3, lg: 5 },
-            width: {xs: '100%', sm: '100%', md: '90%', lg: '80%', xl: '80%'} }}>
-            <Typography variant="h4" gutterBottom>
-                Movie Genres
-            </Typography>
-            {loading ? (
-                <CircularProgress />
-            ) : error ? (
-                <Typography color="error">{error}</Typography>
-            ) : (
-                <Box display="flex" flexDirection="column" gap={4}>
-                    {genres.map((genre) => (
-                        <GenreRow
-                            key={genre.id}
-                            genre={genre}
-                            movies={moviesByGenre[genre.id]?.movies || []}
-                            initialPage={moviesByGenre[genre.id]?.page || 1}
-                            totalPages={moviesByGenre[genre.id]?.totalPages || 1}
-                            totalResults={moviesByGenre[genre.id]?.totalResults || 0}
-                        />
-
-                    ))}
-                </Box>
-
-            )}
+        <Container maxWidth={false} disableGutters>
+            {GENRES.map((genre) => (
+                <GenreSection
+                    key={genre.name}
+                    genre={genre}
+                    title={genre.name}
+                    onViewAll={() => handleGenreClick(genre.name)}
+                />
+            ))}
         </Container>
+    );
+};
+
+const GenreSection: React.FC<{
+    genre: { name: string; movieId: number; tvId: number };
+    title: string;
+    onViewAll: () => void;
+}> = ({ genre, title, onViewAll }) => {
+    const [page, setPage] = useState(1);
+    const [allMedia, setAllMedia] = useState<Media[]>([]);
+    const itemsPerPage = 8;
+
+    const {
+        combinedMedia,
+        totalCount,
+        moviesLoading,
+        tvLoading
+    } = useGenreMedia({
+        movieId: genre.movieId,
+        tvId: genre.tvId,
+        page,
+        shouldLoadAll: false,
+        itemsPerPage
+    });
+
+    // When combinedMedia changes due to page change, accumulate the media items
+    useEffect(() => {
+        if (combinedMedia && combinedMedia.length > 0) {
+            if (page === 1) {
+                // First page - just set the media
+                setAllMedia(combinedMedia);
+            } else {
+                // Add new items, avoiding duplicates
+                setAllMedia(prevMedia => {
+                    const newItems = combinedMedia.filter(
+                        item => !prevMedia.some(existing => existing.id === item.id)
+                    );
+                    return [...prevMedia, ...newItems];
+                });
+            }
+        }
+    }, [combinedMedia, page]);
+
+    const handleLoadMore = () => {
+        if (allMedia.length < totalCount) {
+            setPage(prev => prev + 1);
+        }
+    };
+
+    return (
+        <MediaGrid
+            media={allMedia}
+            title={title}
+            onViewAll={onViewAll}
+            showViewAll={true}
+            showType={true}
+            showLoadMore={allMedia.length < totalCount && !moviesLoading && !tvLoading}
+            onLoadMore={handleLoadMore}
+            totalCount={totalCount}
+            showCount={true}
+        />
     );
 };
 

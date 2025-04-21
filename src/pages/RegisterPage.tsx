@@ -9,35 +9,39 @@ import {
     Link,
     Alert,
     Paper,
-    useTheme,
-    useMediaQuery,
     InputAdornment,
     IconButton,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 
-const LoginPage: React.FC = () => {
+const RegisterPage: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const navigate = useNavigate();
-    const { signIn } = useAuth();
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const { signUp } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+
+        if (password !== confirmPassword) {
+            setError('Passwords do not match');
+            return;
+        }
+
         setLoading(true);
 
         try {
-            await signIn(email, password);
+            await signUp(email, password);
             navigate('/');
         } catch (err) {
-            setError('Failed to sign in. Please check your credentials.');
+            setError('Failed to create an account. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -109,7 +113,7 @@ const LoginPage: React.FC = () => {
                         }}
                     >
                         <Typography component="h1" variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
-                            Welcome Back
+                            Create Account
                         </Typography>
                         {error && (
                             <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
@@ -138,7 +142,7 @@ const LoginPage: React.FC = () => {
                                 label="Password"
                                 type={showPassword ? 'text' : 'password'}
                                 id="password"
-                                autoComplete="current-password"
+                                autoComplete="new-password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 InputProps={{
@@ -161,6 +165,39 @@ const LoginPage: React.FC = () => {
                                         </InputAdornment>
                                     ),
                                 }}
+                                sx={{ mb: 2 }}
+                            />
+                            <TextField
+                                margin="normal"
+                                required
+                                fullWidth
+                                name="confirmPassword"
+                                label="Confirm Password"
+                                type={showConfirmPassword ? 'text' : 'password'}
+                                id="confirmPassword"
+                                autoComplete="new-password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="toggle confirm password visibility"
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                edge="end"
+                                                sx={{
+                                                    color: 'rgba(255, 255, 255, 0.7)',
+                                                    '&:hover': {
+                                                        color: 'white',
+                                                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                                    },
+                                                }}
+                                            >
+                                                {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }}
                                 sx={{ mb: 3 }}
                             />
                             <Button
@@ -178,12 +215,12 @@ const LoginPage: React.FC = () => {
                                 }}
                                 disabled={loading}
                             >
-                                {loading ? 'Signing in...' : 'Sign In'}
+                                {loading ? 'Creating Account...' : 'Sign Up'}
                             </Button>
                             <Box sx={{ textAlign: 'center' }}>
                                 <Link
                                     component={RouterLink}
-                                    to="/register"
+                                    to="/login"
                                     variant="body1"
                                     sx={{
                                         textDecoration: 'none',
@@ -192,7 +229,7 @@ const LoginPage: React.FC = () => {
                                         },
                                     }}
                                 >
-                                    Don't have an account? Sign Up
+                                    Already have an account? Sign In
                                 </Link>
                             </Box>
                         </Box>
@@ -203,4 +240,4 @@ const LoginPage: React.FC = () => {
     );
 };
 
-export default LoginPage; 
+export default RegisterPage;

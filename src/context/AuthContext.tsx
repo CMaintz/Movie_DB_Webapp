@@ -1,35 +1,136 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '../services/firebaseService';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { auth } from '../services/firebase';
+import {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged,
+    User as FirebaseUser,
+} from 'firebase/auth';
+import { useSnackbar } from 'notistack';
 
-interface AuthContextType {
-    user: User | null;
-    loading: boolean;
+/**
+ * Custom User type that contains only the fields we need from FirebaseUser
+ * This creates a cleaner interface for components consuming auth data
+ */
+export interface AuthUser {
+    uid: string;
+    email: string | null;
+    displayName: string | null;
+    photoURL?: string | null;
 }
 
-const AuthContext = createContext<AuthContextType>({
-    user: null,
-    loading: true,
+/**
+ * Interface defining the shape of our authentication context
+ */
+interface AuthContextType {
+    user: AuthUser | null;
+    loading: boolean;
+    signUp: (email: string, password: string) => Promise<void>;
+    signIn: (email: string, password: string) => Promise<void>;
+    logout: () => Promise<void>;
+}
+
+/**
+ * Create the authentication context with undefined default value
+ */
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+/**
+ * Maps a Firebase user to our simplified AuthUser type
+ */
+const mapFirebaseUserToAuthUser = (firebaseUser: FirebaseUser): AuthUser => ({
+    uid: firebaseUser.uid,
+    email: firebaseUser.email,
+    displayName: firebaseUser.displayName,
+    photoURL: firebaseUser.photoURL,
 });
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const [user, setUser] = useState<User | null>(null);
+/**
+ * Auth Provider component that wraps the application and provides auth context
+ */
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [user, setUser] = useState<AuthUser | null>(null);
     const [loading, setLoading] = useState(true);
+    const { enqueueSnackbar } = useSnackbar();
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-            setUser(firebaseUser);
+        // Subscribe to Firebase auth state changes
+        const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+            if (firebaseUser) {
+                // Convert Firebase user to our AuthUser type
+                setUser(mapFirebaseUserToAuthUser(firebaseUser));
+            } else {
+                setUser(null);
+            }
             setLoading(false);
         });
 
+        // Cleanup subscription on unmount
         return () => unsubscribe();
     }, []);
 
-    return (
-        <AuthContext.Provider value={{ user, loading }}>
-            {children}
-        </AuthContext.Provider>
-    );
+    /**
+     * Sign up a new user with email and password
+     */
+    const signUp = async (email: string, password: string) => {
+        try {
+            await createUserWithEmailAndPassword(auth, email, password);
+            enqueueSnackbar('Account created successfully!', { variant: 'success' });
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+            enqueueSnackbar(`Failed to create account: ${errorMessage}`, { variant: 'error' });
+            throw error;
+        }
+    };
+
+    /**
+     * Sign in an existing user with email and password
+     */
+    const signIn = async (email: string, password: string) => {
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            enqueueSnackbar('Logged in successfully!', { variant: 'success' });
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+            enqueueSnackbar(`Failed to log in: ${errorMessage}`, { variant: 'error' });
+            throw error;
+        }
+    };
+
+    /**
+     * Log out the current user
+     */
+    const logout = async () => {
+        try {
+            await signOut(auth);
+            enqueueSnackbar('Logged out successfully!', { variant: 'success' });
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+            enqueueSnackbar(`Failed to log out: ${errorMessage}`, { variant: 'error' });
+            throw error;
+        }
+    };
+
+    const value = {
+        user,
+        loading,
+        signUp,
+        signIn,
+        logout,
+    };
+
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuthContext = () => useContext(AuthContext);
+/**
+ * Custom hook to use the auth context
+ * @throws Error if used outside of an AuthProvider
+ */
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (context === undefined) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
+};

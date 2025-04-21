@@ -1,132 +1,275 @@
-//import React from 'react';
-//import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
-import { Link } from 'react-router-dom';
-import * as React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import {
+    AppBar,
+    Toolbar,
+    Typography,
+    Button,
+    Box,
+    IconButton,
+    Menu,
+    MenuItem,
+    useTheme,
+    useMediaQuery,
+    Drawer,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    BottomNavigation,
+    BottomNavigationAction,
+    Fab,
+} from '@mui/material';
+import {
+    AccountCircle,
+    Home,
+    Category,
+    Favorite,
+    Menu as MenuIcon,
+    Login,
+    PersonAdd,
+    Person,
+} from '@mui/icons-material';
+import { useAuth } from '../context/AuthContext';
+import { useState, useEffect } from 'react';
 
-import {AppBar, Box, Toolbar, Typography, IconButton, Menu, Container, Avatar, Button, Tooltip, MenuItem} from '@mui/material';
-import {Menu as MenuIcon, Adb as AdbIcon } from '@mui/icons-material';
+const Navbar = () => {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const [value, setValue] = useState(0);
 
-const pages = ['Products', 'Pricing', 'Blog'];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+    // Update the bottom navigation value based on current route
+    useEffect(() => {
+        const path = location.pathname;
+        if (path === '/') {
+            setValue(0);
+        } else if (path.startsWith('/genre/')) {
+            setValue(1);
+        } else if (path === '/wishlist') {
+            setValue(2);
+        } else {
+            setValue(-1);
+        }
+    }, [location.pathname]);
 
-const Navbar: React.FC = () => {
-    const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
-    const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
-
-    const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorElNav(event.currentTarget);
+    const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(event.currentTarget);
     };
-    const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorElUser(event.currentTarget);
+
+    const handleClose = () => {
+        setAnchorEl(null);
     };
 
-    const handleCloseNavMenu = () => {
-        setAnchorElNav(null);
+    const handleLogout = async () => {
+        try {
+            await logout();
+            handleClose();
+            setMobileMenuOpen(false);
+        } catch (error) {
+            console.error('Failed to log out:', error);
+        }
     };
 
-    const handleCloseUserMenu = () => {
-        setAnchorElUser(null);
+    const handleNavigation = (path: string) => {
+        navigate(path);
+        setMobileMenuOpen(false);
     };
+
+    const handleGenresClick = () => {
+        navigate('/genre/Action'); // Default to Action genre
+    };
+
+    const mobileMenu = (
+        <Drawer
+            anchor="right"
+            open={mobileMenuOpen}
+            onClose={() => setMobileMenuOpen(false)}
+        >
+            <Box sx={{ width: 250 }}>
+                <List>
+                    {user && (
+                        <>
+                            <ListItem
+                                component="div"
+                                onClick={() => handleNavigation('/profile')}
+                                sx={{ cursor: 'pointer' }}
+                            >
+                                <ListItemIcon>
+                                    <Person />
+                                </ListItemIcon>
+                                <ListItemText primary="Profile" />
+                            </ListItem>
+                            <ListItem
+                                component="div"
+                                onClick={handleLogout}
+                                sx={{ cursor: 'pointer' }}
+                            >
+                                <ListItemIcon>
+                                    <AccountCircle />
+                                </ListItemIcon>
+                                <ListItemText primary="Logout" />
+                            </ListItem>
+                        </>
+                    )}
+                    {!user && (
+                        <>
+                            <ListItem
+                                component="div"
+                                onClick={() => handleNavigation('/login')}
+                                sx={{ cursor: 'pointer' }}
+                            >
+                                <ListItemIcon>
+                                    <Login />
+                                </ListItemIcon>
+                                <ListItemText primary="Login" />
+                            </ListItem>
+                            <ListItem
+                                component="div"
+                                onClick={() => handleNavigation('/register')}
+                                sx={{ cursor: 'pointer' }}
+                            >
+                                <ListItemIcon>
+                                    <PersonAdd />
+                                </ListItemIcon>
+                                <ListItemText primary="Register" />
+                            </ListItem>
+                        </>
+                    )}
+                </List>
+            </Box>
+        </Drawer>
+    );
+
+    if (isMobile) {
+        return (
+            <>
+                <Box sx={{ height: 56 }} />
+                <Fab
+                    size="small"
+                    color="primary"
+                    onClick={() => setMobileMenuOpen(true)}
+                    sx={{
+                        position: 'fixed',
+                        right: 16,
+                        top: 16,
+                        zIndex: 1200
+                    }}
+                >
+                    <MenuIcon />
+                </Fab>
+                <BottomNavigation
+                    value={value}
+                    onChange={(event, newValue) => {
+                        setValue(newValue);
+                        switch(newValue) {
+                            case 0:
+                                handleNavigation('/');
+                                break;
+                            case 1:
+                                handleGenresClick();
+                                break;
+                            case 2:
+                                handleNavigation('/wishlist');
+                                break;
+                        }
+                    }}
+                    showLabels
+                    sx={{
+                        position: 'fixed',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        backgroundColor: 'background.paper',
+                        borderTop: '1px solid',
+                        borderColor: 'divider',
+                        zIndex: 1000
+                    }}
+                >
+                    <BottomNavigationAction label="Home" icon={<Home />} />
+                    <BottomNavigationAction label="Genres" icon={<Category />} />
+                    <BottomNavigationAction
+                        label="Wishlist"
+                        icon={<Favorite />}
+                    />
+                </BottomNavigation>
+                {mobileMenu}
+            </>
+        );
+    }
 
     return (
-        <AppBar position="static">
-            <Container maxWidth={false}>
-                <Toolbar disableGutters>
-                    <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
-                    <Typography
-                        variant="h6"
-                        noWrap
-                        component="a"
-                        href="#app-bar-with-responsive-menu"
-                        sx={{
-                            mr: 2,
-                            display: { xs: 'none', md: 'flex' },
-                            fontFamily: 'monospace',
-                            fontWeight: 700,
-                            letterSpacing: '.3rem',
-                            color: 'inherit',
-                            textDecoration: 'none',
-                        }}
-                    >
-                        LOGO
-                    </Typography>
+        <AppBar
+            position="fixed"
+            sx={{
+                width: '100%',
+                maxWidth: '100vw',
+                overflow: 'hidden'
+            }}
+        >
+            <Toolbar sx={{
+                width: '100%',
+                maxWidth: '100%',
+                overflow: 'hidden'
+            }}>
+                <Typography
+                    variant="h6"
+                    component="div"
+                    sx={{ flexGrow: 1, cursor: 'pointer' }}
+                    onClick={() => navigate('/')}
+                >
+                    MovieDB
+                </Typography>
 
-                    <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+                <Box sx={{
+                    display: 'flex',
+                    gap: 2,
+                    mr: 2,
+                    overflow: 'hidden'
+                }}>
+                    <Button
+                        color="inherit"
+                        startIcon={<Home />}
+                        onClick={() => navigate('/')}
+                    >
+                        Home
+                    </Button>
+                    <Button
+                        color="inherit"
+                        startIcon={<Category />}
+                        onClick={handleGenresClick}
+                    >
+                        Genres
+                    </Button>
+                    <Button
+                        color="inherit"
+                        startIcon={<Favorite />}
+                        onClick={() => navigate('/wishlist')}
+                    >
+                        Wishlist
+                    </Button>
+                </Box>
+
+                {user ? (
+                    <>
                         <IconButton
                             size="large"
                             aria-label="account of current user"
                             aria-controls="menu-appbar"
                             aria-haspopup="true"
-                            onClick={handleOpenNavMenu}
+                            onClick={handleMenu}
                             color="inherit"
                         >
-                            <MenuIcon />
+                            <AccountCircle />
                         </IconButton>
                         <Menu
                             id="menu-appbar"
-                            anchorEl={anchorElNav}
+                            anchorEl={anchorEl}
                             anchorOrigin={{
                                 vertical: 'bottom',
-                                horizontal: 'left',
-                            }}
-                            keepMounted
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'left',
-                            }}
-                            open={Boolean(anchorElNav)}
-                            onClose={handleCloseNavMenu}
-                            sx={{ display: { xs: 'block', md: 'none' } }}
-                        >
-                            {pages.map((page) => (
-                                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                                    <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
-                                </MenuItem>
-                            ))}
-                        </Menu>
-                    </Box>
-                    <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
-                    <Typography
-                        variant="h5"
-                        noWrap
-                        component="a"
-                        href="#app-bar-with-responsive-menu"
-                        sx={{
-                            mr: 2,
-                            display: { xs: 'flex', md: 'none' },
-                            flexGrow: 1,
-                            fontFamily: 'monospace',
-                            fontWeight: 700,
-                            letterSpacing: '.3rem',
-                            color: 'inherit',
-                            textDecoration: 'none',
-                        }}
-                    >
-                        LOGO
-                    </Typography>
-                    <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                        {pages.map((page) => (
-                            <Button
-                                key={page}
-                                onClick={handleCloseNavMenu}
-                                sx={{ my: 2, color: 'white', display: 'block' }}
-                            >
-                                {page}
-                            </Button>
-                        ))}
-                    </Box>
-                    <Box sx={{ flexGrow: 0 }}>
-                        <Tooltip title="Open settings">
-                            <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
-                            </IconButton>
-                        </Tooltip>
-                        <Menu
-                            sx={{ mt: '45px' }}
-                            id="menu-appbar"
-                            anchorEl={anchorElUser}
-                            anchorOrigin={{
-                                vertical: 'top',
                                 horizontal: 'right',
                             }}
                             keepMounted
@@ -134,185 +277,28 @@ const Navbar: React.FC = () => {
                                 vertical: 'top',
                                 horizontal: 'right',
                             }}
-                            open={Boolean(anchorElUser)}
-                            onClose={handleCloseUserMenu}
+                            open={Boolean(anchorEl)}
+                            onClose={handleClose}
                         >
-                            {settings.map((setting) => (
-                                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                                    <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
-                                </MenuItem>
-                            ))}
+                            <MenuItem onClick={() => { navigate('/profile'); handleClose(); }}>
+                                Profile
+                            </MenuItem>
+                            <MenuItem onClick={handleLogout}>Logout</MenuItem>
                         </Menu>
+                    </>
+                ) : (
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button color="inherit" onClick={() => navigate('/login')}>
+                            Login
+                        </Button>
+                        <Button color="inherit" onClick={() => navigate('/register')}>
+                            Register
+                        </Button>
                     </Box>
-                </Toolbar>
-            </Container>
-        </AppBar>
-    );
-};
-
-   /* return (
-        <AppBar position="sticky">
-            <Toolbar>
-                <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                    Movie Explorer
-                </Typography>
-                <Box>
-                    <Button color="inherit" component={Link} to="/">
-                        Home
-                    </Button>
-                    <Button color="inherit" component={Link} to="/watchlist">
-                        Watchlist
-                    </Button>
-                </Box>
+                )}
             </Toolbar>
         </AppBar>
     );
 };
-*/
-export default Navbar;
-/*
 
-
-
-function ResponsiveAppBar() {
-  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
-  const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
-
-  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElNav(event.currentTarget);
-  };
-  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElUser(event.currentTarget);
-  };
-
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
-
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
-
-  return (
-    <AppBar position="static">
-      <Container maxWidth="xl">
-        <Toolbar disableGutters>
-          <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
-          <Typography
-            variant="h6"
-            noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
-            sx={{
-              mr: 2,
-              display: { xs: 'none', md: 'flex' },
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: 'inherit',
-              textDecoration: 'none',
-            }}
-          >
-            LOGO
-          </Typography>
-
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
-              color="inherit"
-            >
-              <MenuIcon />
-            </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{ display: { xs: 'block', md: 'none' } }}
-            >
-              {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
-          </Box>
-          <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
-          <Typography
-            variant="h5"
-            noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
-            sx={{
-              mr: 2,
-              display: { xs: 'flex', md: 'none' },
-              flexGrow: 1,
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: 'inherit',
-              textDecoration: 'none',
-            }}
-          >
-            LOGO
-          </Typography>
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {pages.map((page) => (
-              <Button
-                key={page}
-                onClick={handleCloseNavMenu}
-                sx={{ my: 2, color: 'white', display: 'block' }}
-              >
-                {page}
-              </Button>
-            ))}
-          </Box>
-          <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title="Open settings">
-              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
-              </IconButton>
-            </Tooltip>
-            <Menu
-              sx={{ mt: '45px' }}
-              id="menu-appbar"
-              anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchorElUser)}
-              onClose={handleCloseUserMenu}
-            >
-              {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
-          </Box>
-        </Toolbar>
-      </Container>
-    </AppBar>
-  );
-}
-export default ResponsiveAppBar;
-*/
+export default Navbar; 
