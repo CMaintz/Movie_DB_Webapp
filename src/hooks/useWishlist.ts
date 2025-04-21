@@ -1,4 +1,3 @@
-// src/hooks/useWishlist.ts
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { wishlistService, WishlistItem } from '../services/wishlistService';

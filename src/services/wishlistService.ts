@@ -1,4 +1,3 @@
-// src/services/wishlistService.ts
 import { collection, doc, addDoc, deleteDoc, getDocs, query, where, Timestamp } from 'firebase/firestore';
 import { db } from './firebaseService.ts';
 
