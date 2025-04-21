@@ -15,7 +15,7 @@ import {
 import { ArrowBack} from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { useMediaDetails } from '../services/api';
+import { useMediaDetails } from '../services/apiService.ts';
 import MediaRating from '../components/MediaRating';
 import WishlistButton from '../components/WishlistButton';
 import { Carousel } from 'react-responsive-carousel';

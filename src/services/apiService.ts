@@ -7,7 +7,7 @@ const BASE_URL = 'https://api.themoviedb.org/3';
 const DEFAULT_LANGUAGE = 'en-US'; // Set default language to English
 const MAX_PAGE_LIMIT = 500; // TMDB API page limit
 
-const api = axios.create({
+const apiService = axios.create({
     baseURL: BASE_URL,
     params: {
         api_key: API_KEY,
@@ -21,7 +21,7 @@ const api = axios.create({
 });
 
 // Add response interceptor to handle CORS
-api.interceptors.response.use(
+apiService.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 403) {
@@ -39,7 +39,7 @@ const getSafePage = (page: number): number => {
 
 export const getTrending = async (mediaType: 'movie' | 'tv' = 'movie', page: number = 1): Promise<MediaResponse> => {
     const safePage = getSafePage(page);
-    const { data } = await api.get(`/trending/${mediaType}/week`, {
+    const { data } = await apiService.get(`/trending/${mediaType}/week`, {
         params: {
             page: safePage,
             with_original_language: 'en' // Only English language content
@@ -55,7 +55,7 @@ export const getTrending = async (mediaType: 'movie' | 'tv' = 'movie', page: num
 };
 
 export const getGenres = async (mediaType: 'movie' | 'tv'): Promise<Genre[]> => {
-    const { data } = await api.get(`/genre/${mediaType}/list`);
+    const { data } = await apiService.get(`/genre/${mediaType}/list`);
     return data.genres;
 };
 
@@ -65,7 +65,7 @@ export const getMediaByGenre = async (
     page: number = 1
 ): Promise<MediaResponse> => {
     const safePage = getSafePage(page);
-    const { data } = await api.get(`/discover/${mediaType}`, {
+    const { data } = await apiService.get(`/discover/${mediaType}`, {
         params: {
             with_genres: genreId,
             page: safePage,
@@ -96,7 +96,7 @@ export const getMediaDetails = async (
     mediaType: 'movie' | 'tv',
     id: number
 ): Promise<MediaDetails> => {
-    const { data } = await api.get(`/${mediaType}/${id}`, {
+    const { data } = await apiService.get(`/${mediaType}/${id}`, {
         params: {
             append_to_response: 'credits,videos,runtime,status,last_air_date'
         },
@@ -111,7 +111,7 @@ export const getMediaDetails = async (
 };
 
 export const getMediaCountByGenre = async (mediaType: 'movie' | 'tv', genreId: number): Promise<number> => {
-    const { data } = await api.get(`/discover/${mediaType}`, {
+    const { data } = await apiService.get(`/discover/${mediaType}`, {
         params: {
             with_genres: genreId,
             page: 1,

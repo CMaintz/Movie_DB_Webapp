@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container } from '@mui/material';
-import { useGenres } from '../services/api';
+import { useGenres } from '../services/apiService.ts';
 import MediaGrid from '../components/MediaGrid';
 import { useNavigate } from 'react-router-dom';
 import { GENRES } from '../utils/genreMap';

@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { Box, Typography, Container } from '@mui/material';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getMediaDetails } from '../services/api';
+import { getMediaDetails } from '../services/apiService.ts';
 import MediaGrid from '../components/MediaGrid';
 import { useWishlist } from '../hooks/useWishlist';
 import { useAuth } from '../context/AuthContext';

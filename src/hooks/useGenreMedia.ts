@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useMediaByGenre, useMediaCountByGenre } from '../services/api';
+import { useMediaByGenre, useMediaCountByGenre } from '../services/apiService.ts';
 import { Media } from '../types';
 
 interface UseGenreMediaProps {

@@ -1,6 +1,6 @@
 // src/services/wishlistService.ts
 import { collection, doc, addDoc, deleteDoc, getDocs, query, where, Timestamp } from 'firebase/firestore';
-import { db } from './firebase';
+import { db } from './firebaseService.ts';
 
 /**
  * Interface representing a wishlist item in the application
