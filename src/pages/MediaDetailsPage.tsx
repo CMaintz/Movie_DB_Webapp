@@ -27,10 +27,37 @@ import MediaRating from '../components/MediaRating';
 import WishlistButton from '../components/WishlistButton';
 import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
-import { MovieDetails, SeriesDetails, Genre } from '../types';
+import { MovieDetails, SeriesDetails, Genre, MediaDetails } from '../types';
 import { getGenreMapping } from '../utils/genreMap';
 import { formatMediaDateRange, formatMediaRuntime, formatSeasonYear } from '../utils/mediaFormatter.ts';
 
+// Type guard to check if media is MovieDetails
+const isMovieDetails = (media: MediaDetails): media is MovieDetails => {
+    return media.media_type === 'movie';
+};
+
+// Type guard to check if media is SeriesDetails
+const isSeriesDetails = (media: MediaDetails): media is SeriesDetails => {
+    return media.media_type === 'tv';
+};
+
+// Type for crew member with specific job
+interface CrewMember {
+    id: number;
+    name: string;
+    job: string;
+    profile_path: string | null;
+    department: string;
+}
+
+// Type for video
+interface Video {
+    id: string;
+    key: string;
+    name: string;
+    site: string;
+    type: string;
+}
 
 const MediaDetailsPage: React.FC = () => {
     const navigate = useNavigate();
@@ -65,13 +92,17 @@ const MediaDetailsPage: React.FC = () => {
      * - For TV shows: Find creators and producers
      */
     // Get director information (for movies)
-    const director = media.media_type === 'movie'
-        ? media.credits?.crew?.find(person => person.job === 'Director')
+    const director = isMovieDetails(media)
+        ? media.credits?.crew?.find((person: CrewMember) => person.job === 'Director')
         : null;
 
     // Get creators (for TV shows)
-    const creators = media.media_type === 'tv'
-        ? media.credits?.crew?.filter(person => person.job === 'Creator' || person.job === 'Executive Producer' || person.job === 'Showrunner')
+    const creators = isSeriesDetails(media)
+        ? media.credits?.crew?.filter((person: CrewMember) => 
+            person.job === 'Creator' || 
+            person.job === 'Executive Producer' ||
+            (person.department === 'Writing' && person.job === 'Writer')
+        )
         : [];
 
     /**
@@ -92,7 +123,7 @@ const MediaDetailsPage: React.FC = () => {
 
     // Find the official trailer video if available
     const trailer = media.videos?.results?.find(
-        (video) => video.site === 'YouTube' && video.type === 'Trailer'
+        (video: Video) => video.site === 'YouTube' && video.type === 'Trailer'
     );
 
     return (
@@ -240,14 +271,14 @@ const MediaDetailsPage: React.FC = () => {
                                     wordBreak: 'break-word'
                                 }}
                             >
-                                {media.media_type === 'movie'
+                                {isMovieDetails(media)
                                     ? `${formatMediaDateRange(media)} • ${formatMediaRuntime(media)}`
                                     : formatMediaDateRange(media, true)
-                                }
+                                    }
                             </Typography>
 
                             {/* Display Director for Movies */}
-                            {media.media_type === 'movie' && director && (
+                            {isMovieDetails(media) && director && (
                                 <Typography
                                     variant="h6"
                                     sx={{
@@ -256,12 +287,12 @@ const MediaDetailsPage: React.FC = () => {
                                         wordBreak: 'break-word'
                                     }}
                                 >
-                                    • Director: {director.name}
+                                    Directed by {director.name}
                                 </Typography>
                             )}
 
                             {/* Display Creators for TV Shows */}
-                            {media.media_type === 'tv' && creators.length > 0 && (
+                            {isSeriesDetails(media) && creators.length > 0 && (
                                 <Typography
                                     variant="h6"
                                     sx={{
@@ -270,7 +301,7 @@ const MediaDetailsPage: React.FC = () => {
                                         wordBreak: 'break-word'
                                     }}
                                 >
-                                    • Creator: {creators[0].name}
+                                    Created by {creators.map(creator => creator.name).join(', ')}
                                 </Typography>
                             )}
                         </Stack>
@@ -366,7 +397,7 @@ const MediaDetailsPage: React.FC = () => {
                                             </Typography>
 
                                             {/* Movie Details */}
-                                            {media.media_type === 'movie' && director && (
+                                            {isMovieDetails(media) && director && (
                                                 <Box sx={{ mt: 2 }}>
                                                     <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 2 }}>
                                                         Director
@@ -403,7 +434,7 @@ const MediaDetailsPage: React.FC = () => {
                                             )}
 
                                             {/* TV Show Details */}
-                                            {media.media_type === 'tv' && creators.length > 0 && (
+                                            {isSeriesDetails(media) && creators.length > 0 && (
                                                 <Box sx={{ mt: 2 }}>
                                                     <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 2 }}>
                                                         Creator
@@ -475,10 +506,10 @@ const MediaDetailsPage: React.FC = () => {
                                                 onSwipeEnd={() => setAutoPlay(true)}
                                             >
                                                 {media.credits.cast
-                                                    .filter((actor, index, self) =>
-                                                        index === self.findIndex((a) => a.id === actor.id)
+                                                    .filter((actor, index, self) => 
+                                                        self.findIndex(a => a.id === actor.id) === index
                                                     )
-                                                    .slice(0, 10)
+                                                    .slice(0, 20)
                                                     .map((actor) => (
                                                         <Box key={actor.id} sx={{ px: 1, width: '100%', textAlign: 'center' }}>
                                                             <Box sx={{
@@ -585,7 +616,7 @@ const MediaDetailsPage: React.FC = () => {
                     </Grid>
 
                     {/* Seasons Section (TV only) */}
-                    {media.media_type === 'tv' && (media as SeriesDetails).seasons?.length > 0 && (
+                    {isSeriesDetails(media) && (media as SeriesDetails).seasons?.length > 0 && (
                         <Paper elevation={0} sx={{
                             p: 3,
                             bgcolor: 'rgba(30, 30, 30, 0.8)',
