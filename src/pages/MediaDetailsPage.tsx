@@ -92,18 +92,10 @@ const MediaDetailsPage: React.FC = () => {
      * - For TV shows: Find creators and producers
      */
     // Get director information (for movies)
-    const director = isMovieDetails(media)
-        ? media.credits?.crew?.find((person: CrewMember) => person.job === 'Director')
-        : null;
+    const director = isMovieDetails(media) ? media.credits?.crew?.find(person => person.job === 'Director') : null;
 
-    // Get creators (for TV shows)
-    const creators = isSeriesDetails(media)
-        ? media.credits?.crew?.filter((person: CrewMember) => 
-            person.job === 'Creator' || 
-            person.job === 'Executive Producer' ||
-            (person.department === 'Writing' && person.job === 'Writer')
-        )
-        : [];
+    // Get creators (for TV shows) with proper type safety
+    const creators = isSeriesDetails(media) ? media.created_by : [];
 
     /**
      * Handle navigation to genre page when a genre chip is clicked
@@ -434,13 +426,25 @@ const MediaDetailsPage: React.FC = () => {
                                             )}
 
                                             {/* TV Show Details */}
+                                            {isSeriesDetails(media) && (
+                                                <Box sx={{ mt: 2 }}>
+                                                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 2 }}>
+                                                        Series Details
+                                                    </Typography>
+                                                    <Typography variant="body1">
+                                                        {media.number_of_seasons} seasons • {media.number_of_episodes} episodes
+                                                    </Typography>
+                                                </Box>
+                                            )}
+
+                                            {/* Creators Section */}
                                             {isSeriesDetails(media) && creators.length > 0 && (
                                                 <Box sx={{ mt: 2 }}>
                                                     <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 2 }}>
-                                                        Creator
+                                                        Creators
                                                     </Typography>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-                                                        {creators.slice(0, 2).map(creator => (
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2, mt: 1 }}>
+                                                        {creators.map(creator => (
                                                             <Box key={creator.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                                 <Box
                                                                     component="img"

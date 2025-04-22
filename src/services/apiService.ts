@@ -128,7 +128,7 @@ export const getMediaDetails = async (
 ): Promise<MediaDetails> => {
     const { data } = await apiService.get(`/${mediaType}/${id}`, {
         params: {
-            append_to_response: 'credits,videos,runtime,status,last_air_date'
+            append_to_response: 'credits,videos,runtime,status,last_air_date,created_by'
         },
     });
 
