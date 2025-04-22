@@ -41,15 +41,6 @@ const isSeriesDetails = (media: MediaDetails): media is SeriesDetails => {
     return media.media_type === 'tv';
 };
 
-// Type for crew member with specific job
-interface CrewMember {
-    id: number;
-    name: string;
-    job: string;
-    profile_path: string | null;
-    department: string;
-}
-
 // Type for video
 interface Video {
     id: string;
