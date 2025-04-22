@@ -1,4 +1,3 @@
-import React from 'react';
 import { Pagination as MuiPagination, Box, Typography } from '@mui/material';
 
 interface PaginationProps {

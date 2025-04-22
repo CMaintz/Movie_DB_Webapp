@@ -33,15 +33,6 @@ import {MediaCast} from '../components/media-details/MediaCast';
 import {MediaTrailer} from '../components/media-details/MediaTrailer';
 import {MediaSeasons} from '../components/media-details/MediaSeasons';
 
-// Type guard to check if media is MovieDetails
-const isMovieDetails = (media: MediaDetails): media is MovieDetails => {
-    return media.media_type === 'movie';
-};
-
-// Type guard to check if media is SeriesDetails
-const isSeriesDetails = (media: MediaDetails): media is SeriesDetails => {
-    return media.media_type === 'tv';
-};
 
 const MediaDetailsPage: React.FC = () => {
     const navigate = useNavigate();
@@ -71,9 +62,19 @@ const MediaDetailsPage: React.FC = () => {
         );
     }
 
-        // Get director for movies or creators for TV shows
-        const director = isMovieDetails(media) ? media?.credits?.crew?.find(person => person.job === 'Director') ?? null : null;
-        const creators = isSeriesDetails(media) ? media?.created_by : [];
+    // Type guard to check if media is MovieDetails
+    const isMovieDetails = (media: MediaDetails): media is MovieDetails => {
+    return media.media_type === 'movie';
+    };
+
+    // Type guard to check if media is SeriesDetails
+    const isSeriesDetails = (media: MediaDetails): media is SeriesDetails => {
+    return media.media_type === 'tv';
+    };
+
+    // Get director for movies or creators for TV shows
+    const director = isMovieDetails(media) ? media?.credits?.crew?.find(person => person.job === 'Director') ?? null : null;
+    const creators = isSeriesDetails(media) ? media?.created_by : [];
 
     return (
         <Box sx={{

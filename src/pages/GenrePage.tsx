@@ -6,7 +6,6 @@
  * - Genre selection dropdown
  * - Tabbed interface for All/Movies/TV Shows
  * - Pagination for browsing large result sets
- * - Maintains scroll position when navigating back
  */
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
@@ -63,12 +62,7 @@ const GenrePage: React.FC = () => {
     const [movieId, setMovieId] = useState<number | undefined>();
     const [tvId, setTvId] = useState<number | undefined>();
 
-    /**
-     * Effect to initialize genre IDs when the component mounts
-     * or when the URL parameters change
-     * 
-     * Also handles restoring scroll position when navigating back
-     */
+    // Initialize genre IDs
     useEffect(() => {
         const genreName = name || location.state?.genreName || selectedGenre;
         if (genreName) {
@@ -79,17 +73,9 @@ const GenrePage: React.FC = () => {
                 setTvId(mapping.tvId);
             }
         }
-
-        // Restore scroll position if it exists in location state
-        if (location.state?.scrollPosition) {
-            window.scrollTo(0, location.state.scrollPosition);
-        }
     }, [name, location.state, selectedGenre]);
 
-    /**
-     * Fetch media data for the selected genre
-     * Uses the useGenreMedia hook to get combined and categorized results
-     */
+    // Fetch media data for the selected genre using the useGenreMedia hook
     const {
         moviesData,
         tvData,
@@ -101,35 +87,24 @@ const GenrePage: React.FC = () => {
         movieId: movieId || 0,
         tvId: tvId || 0,
         page,
-        shouldLoadAll: true
     });
 
-    /**
-     * Handle tab change between All/Movies/TV Shows
-     * Resets pagination when switching tabs
-     */
+    // Handle tab changes between All/Movies/TV Shows and reset pagination
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTabValue(newValue);
         setPage(1); // Reset page when switching tabs
     };
 
-    /**
-     * Handle genre selection from dropdown
-     * Navigates to the new genre page
-     */
+    // Handle genre selection from dropdown
     const handleGenreChange = (event: SelectChangeEvent) => {
         const newGenre = event.target.value;
         setSelectedGenre(newGenre);
         navigate(`/genre/${newGenre}`);
     };
 
-    /**
-     * Handle pagination changes
-     * Smoothly scrolls back to top when changing pages
-     */
+    // Handle pagination changes
     const handlePageChange = (newPage: number) => {
         setPage(newPage);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     // Show error if genre IDs couldn't be resolved
@@ -140,6 +115,13 @@ const GenrePage: React.FC = () => {
             </Container>
         );
     }
+
+    // Filter combined media based on selected tab
+    const filteredMedia = tabValue === 0
+        ? combinedMedia
+        : tabValue === 1
+        ? combinedMedia.filter(item => item.media_type === 'movie')
+        : combinedMedia.filter(item => item.media_type === 'tv');
 
     return (
         <Container maxWidth={false}>
@@ -243,70 +225,55 @@ const GenrePage: React.FC = () => {
                 </Box>
 
                 <TabPanel value={tabValue} index={0}>
-
-
                     <MediaGrid
-                        media={combinedMedia}
+                        media={filteredMedia}
                         title={`All ${selectedGenre} Titles`}
                         showViewAll={false}
                         showType={true}
                         showCount={true}
                         totalCount={totalCount}
                     />
-                    {(moviesData?.total_pages || tvData?.total_pages) && (
-                        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-                            <Pagination
-                                currentPage={page}
-                                totalPages={Math.max(moviesData?.total_pages || 0, tvData?.total_pages || 0)}
-                                onPageChange={handlePageChange}
-                            />
-                        </Box>
-                    )}
-
-
+                    <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+                        <Pagination
+                            currentPage={page}
+                            totalPages={Math.max(moviesData?.total_pages || 0, tvData?.total_pages || 0)}
+                            onPageChange={handlePageChange}
+                        />
+                    </Box>
                 </TabPanel>
 
                 <TabPanel value={tabValue} index={1}>
-
                     <MediaGrid
-                        media={moviesData?.results || []}
+                        media={filteredMedia}
                         title={`${selectedGenre} Movies`}
                         showViewAll={false}
                         showCount={true}
                         totalCount={movieCount}
                     />
-                    {moviesData?.total_pages && (
-                        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-                            <Pagination
-                                currentPage={page}
-                                totalPages={moviesData.total_pages}
-                                onPageChange={handlePageChange}
-                            />
-                        </Box>
-                    )}
-
-
+                    <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+                        <Pagination
+                            currentPage={page}
+                            totalPages={moviesData?.total_pages || 0}
+                            onPageChange={handlePageChange}
+                        />
+                    </Box>
                 </TabPanel>
 
                 <TabPanel value={tabValue} index={2}>
-
                     <MediaGrid
-                        media={tvData?.results || []}
+                        media={filteredMedia}
                         title={`${selectedGenre} TV Shows`}
                         showViewAll={false}
                         showCount={true}
                         totalCount={tvCount}
                     />
-                    {tvData?.total_pages && (
-                        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-                            <Pagination
-                                currentPage={page}
-                                totalPages={tvData.total_pages}
-                                onPageChange={handlePageChange}
-                            />
-                        </Box>
-                    )}
-
+                    <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+                        <Pagination
+                            currentPage={page}
+                            totalPages={tvData?.total_pages || 0}
+                            onPageChange={handlePageChange}
+                        />
+                    </Box>
                 </TabPanel>
             </Box>
         </Container>
