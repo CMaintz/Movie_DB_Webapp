@@ -235,8 +235,7 @@ const Navbar = () => {
         >
             <Toolbar sx={{
                 width: '100%',
-                maxWidth: '100%',
-                overflow: 'hidden'
+                maxWidth: '100%'
             }}>
                 <Typography
                     variant="h6"

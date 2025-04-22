@@ -101,7 +101,7 @@ function App() {
             <SnackbarProvider maxSnack={3}>
                 <QueryClientProvider client={queryClient}>
                     <AuthProvider>
-                        <Router basename="/Movie_DB_Webapp">
+                        <Router basename={import.meta.env.BASE_URL}>
                             <Box sx={{
                                 display: 'flex',
                                 flexDirection: 'column',

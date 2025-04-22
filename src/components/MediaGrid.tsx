@@ -22,18 +22,18 @@ interface MediaGridProps {
 }
 
 const MediaGrid: React.FC<MediaGridProps> = ({
-                                                 media,
-                                                 title,
-                                                 showType = true,
-                                                 showViewAll = true,
-                                                 viewAllPath,
-                                                 onViewAll,
-                                                 showLoadMore = false,
-                                                 onLoadMore,
-                                                 totalCount,
-                                                 showCount = false,
-                                                 onMediaChange,
-                                             }) => {
+    media,
+    title,
+    showType = true,
+    showViewAll = true,
+    viewAllPath,
+    onViewAll,
+    showLoadMore = false,
+    onLoadMore,
+    totalCount,
+    showCount = false,
+    onMediaChange,
+}) => {
     const navigate = useNavigate();
     const theme = useTheme();
 
