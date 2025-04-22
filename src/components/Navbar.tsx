@@ -182,14 +182,41 @@ const Navbar = () => {
                         backgroundColor: 'background.paper',
                         borderTop: '1px solid',
                         borderColor: 'divider',
-                        zIndex: 1000
+                        zIndex: 1000,
+                        '& .MuiBottomNavigationAction-root': {
+                            color: 'text.secondary',
+                            '&.Mui-selected': {
+                                color: 'primary.main',
+                            },
+                        },
                     }}
                 >
-                    <BottomNavigationAction label="Home" icon={<Home />} />
-                    <BottomNavigationAction label="Genres" icon={<Category />} />
+                    <BottomNavigationAction
+                        label="Home"
+                        icon={<Home />}
+                        sx={{
+                            ...(location.pathname === '/' && {
+                                color: 'primary.main',
+                            }),
+                        }}
+                    />
+                    <BottomNavigationAction
+                        label="Genres"
+                        icon={<Category />}
+                        sx={{
+                            ...(location.pathname.startsWith('/genre/') && {
+                                color: 'primary.main',
+                            }),
+                        }}
+                    />
                     <BottomNavigationAction
                         label="Wishlist"
                         icon={<Favorite />}
+                        sx={{
+                            ...(location.pathname === '/wishlist' && {
+                                color: 'primary.main',
+                            }),
+                        }}
                     />
                 </BottomNavigation>
                 {mobileMenu}
@@ -217,7 +244,7 @@ const Navbar = () => {
                     sx={{ flexGrow: 1, cursor: 'pointer' }}
                     onClick={() => navigate('/')}
                 >
-                    MovieDB
+                    Movie Explorer
                 </Typography>
 
                 <Box sx={{
@@ -230,6 +257,14 @@ const Navbar = () => {
                         color="inherit"
                         startIcon={<Home />}
                         onClick={() => navigate('/')}
+                        sx={{
+                            ...(location.pathname === '/' && {
+                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                '&:hover': {
+                                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                                },
+                            }),
+                        }}
                     >
                         Home
                     </Button>
@@ -237,6 +272,14 @@ const Navbar = () => {
                         color="inherit"
                         startIcon={<Category />}
                         onClick={() => navigate('/genre/Action')}
+                        sx={{
+                            ...(location.pathname.startsWith('/genre/') && {
+                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                '&:hover': {
+                                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                                },
+                            }),
+                        }}
                     >
                         Genres
                     </Button>
@@ -244,6 +287,14 @@ const Navbar = () => {
                         color="inherit"
                         startIcon={<Favorite />}
                         onClick={() => navigate('/wishlist')}
+                        sx={{
+                            ...(location.pathname === '/wishlist' && {
+                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                '&:hover': {
+                                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                                },
+                            }),
+                        }}
                     >
                         Wishlist
                     </Button>
